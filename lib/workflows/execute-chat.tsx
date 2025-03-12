@@ -3,7 +3,8 @@
 import {
   type Message,
   smoothStream,
-  DataStreamWriter
+  DataStreamWriter,
+  StreamTextResult
 } from 'ai';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -17,7 +18,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import * as gensx from '@gensx/core';
-import { StreamText } from '@gensx/vercel-ai-sdk';
+import { StreamText } from './ai-sdk-components';
 import { type Message as DBMessage } from '@/lib/db/schema';
 import { Session } from 'next-auth';
 
@@ -30,7 +31,7 @@ interface StreamTextParams {
   dataStream: DataStreamWriter
 }
 
-const ExecuteChatComponent = gensx.Component<StreamTextParams, any>('ExecuteChatComponent', (props) => {
+const ExecuteChatComponent = gensx.Component<StreamTextParams, StreamTextResult<any, any>>('ExecuteChatComponent', (props) => {
   const { session, messages, saveMessages, id, selectedChatModel, dataStream } = props;
   return (
     <StreamText
