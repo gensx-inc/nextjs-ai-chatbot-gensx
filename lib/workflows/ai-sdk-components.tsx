@@ -4,7 +4,6 @@ import * as gensx from "@gensx/core";
 import { GsxComponent } from "@gensx/core";
 import * as ai from "ai";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createGSXComponent<TFn extends (...args: any[]) => any>(
   name: string,
   fn: TFn,
