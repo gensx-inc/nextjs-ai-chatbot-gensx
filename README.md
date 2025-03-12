@@ -25,7 +25,7 @@
   - Unified API for generating text, structured objects, and tool calls with LLMs
   - Hooks for building dynamic chat and generative user interfaces
   - Supports OpenAI (default), Anthropic, Cohere, and other model providers
-- [GenSX Support](#https://gensx.com)
+- [GenSX Support](https://gensx.com)
   - Definition of workflows and tools using GenSX
 - [shadcn/ui](https://ui.shadcn.com)
   - Styling with [Tailwind CSS](https://tailwindcss.com)
