@@ -1,11 +1,8 @@
 import {
   type Message,
   createDataStreamResponse,
-  smoothStream,
-  streamText,
 } from 'ai';
 import { auth } from '@/app/(auth)/auth';
-import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
@@ -13,18 +10,11 @@ import {
   saveMessages,
 } from '@/lib/db/queries';
 import {
-  generateUUID,
   getMostRecentUserMessage,
-  sanitizeResponseMessages,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProductionEnvironment } from '@/lib/constants';
 import { NextResponse } from 'next/server';
-import { myProvider } from '@/lib/ai/providers';
+import ExecuteChatWorkflow from '@/lib/workflows/execute-chat';
 
 export const maxDuration = 60;
 
@@ -71,60 +61,14 @@ export async function POST(request: Request) {
     });
 
     return createDataStreamResponse({
-      execute: (dataStream) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
+      execute: async (dataStream) => {
+        const result = await ExecuteChatWorkflow.run({
           messages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
-          },
-          onFinish: async ({ response, reasoning }) => {
-            if (session.user?.id) {
-              try {
-                const sanitizedResponseMessages = sanitizeResponseMessages({
-                  messages: response.messages,
-                  reasoning,
-                });
-
-                await saveMessages({
-                  messages: sanitizedResponseMessages.map((message) => {
-                    return {
-                      id: message.id,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  }),
-                });
-              } catch (error) {
-                console.error('Failed to save chat');
-              }
-            }
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
+          selectedChatModel,
+          id: id,
+          dataStream,
+          saveMessages,
+          session
         });
 
         result.consumeStream();
