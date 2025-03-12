@@ -1,4 +1,3 @@
-// 
 import { tool } from 'ai';
 import { z } from 'zod';
 import CalculatorWorkflow from '@/lib/workflows/calculator';

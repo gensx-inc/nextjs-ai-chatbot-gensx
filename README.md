@@ -1,15 +1,16 @@
 <a href="https://chat.vercel.ai/">
   <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Next.js AI Chatbot</h1>
+  <h1 align="center">Next.js AI Chatbot with GenSX</h1>
 </a>
 
 <p align="center">
-  An Open-Source AI Chatbot Template Built With Next.js and the AI SDK by Vercel.
+  An Open-Source AI Chatbot Template Built With Next.js, GenSX and the AI SDK by Vercel.
 </p>
 
 <p align="center">
   <a href="#features"><strong>Features</strong></a> ·
   <a href="#model-providers"><strong>Model Providers</strong></a> ·
+  <a href="#gensx-support"><strong>GenSX Support</strong></a> ·
   <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
   <a href="#running-locally"><strong>Running locally</strong></a>
 </p>
@@ -24,6 +25,8 @@
   - Unified API for generating text, structured objects, and tool calls with LLMs
   - Hooks for building dynamic chat and generative user interfaces
   - Supports OpenAI (default), Anthropic, Cohere, and other model providers
+- [GenSX Support](#https://gensx.com)
+  - Definition of workflows and tools using GenSX
 - [shadcn/ui](https://ui.shadcn.com)
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
@@ -36,6 +39,149 @@
 ## Model Providers
 
 This template ships with OpenAI `gpt-4o` as the default. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+
+## GenSX Support
+
+This updated version includes support for GenSX workflows. 
+
+TLDR; To add a new tool to your chat application:
+
+1. Create a workflow in `lib/workflows/`
+2. Create a tool that uses the workflow in `lib/ai/tools/`
+3. Import and add the tool to both the `experimental_activeTools` array and the `tools` object in `execute-chat.tsx`
+
+### Creating Workflows
+
+1. Create a new workflow file in the `lib/workflows` directory:
+
+```tsx
+// Example: lib/workflows/calculator.tsx
+/** @jsxImportSource @gensx/core */
+import { Component, Workflow } from "@gensx/core"
+import * as gensx from "@gensx/core"
+import { GenerateText } from "@gensx/vercel-ai-sdk"
+import { openai } from "@ai-sdk/openai"
+
+interface CalculatorProps {
+    expression: string
+}
+
+interface CalculatorResult {
+    result: number
+}
+
+const Calculator = Component<CalculatorProps, CalculatorResult>('calculator', 
+    async (props) => {
+        const languageModel = openai("gpt-4o-mini");
+        return {
+            result: <GenerateText
+                prompt={`Calculate the result of the following expression: ${props.expression}`}
+                model={languageModel}
+            >
+                {result => {
+                    return result.text
+                }}
+            </GenerateText>
+        }
+    }
+)
+const CalculatorWorkflow = Workflow('Calculator Tool', Calculator)
+
+export default CalculatorWorkflow;
+```
+
+### Creating Tools from Workflows
+
+Once you've created a workflow, you can convert it into a tool that can be used in the chat application:
+
+```typescript
+// Example: lib/ai/tools/calculator.ts
+import { tool } from 'ai';
+import { z } from 'zod';
+import CalculatorWorkflow from '@/lib/workflows/calculator';
+
+export const calculator = 
+  tool({
+    description: 'Perform mathematical calculations',
+    parameters: z.object({
+      expression: z.string(),
+    }),
+    execute: async (params) => {
+      try {
+        return CalculatorWorkflow.run(params);
+      } catch (error) {
+        console.error('Error performing calculation:', error);
+        return { result: 'Error performing calculation' };
+      }
+    },
+  }); 
+```
+
+### Integrating Tools into the Chat Workflow
+
+The main chat execution workflow integrates all your tools. Here's how to add your new tool to the chat system:
+
+```tsx
+// In lib/workflows/execute-chat.tsx
+/** @jsxImportSource @gensx/core */
+import { Component, Workflow } from "@gensx/core"
+import { StreamText } from '@gensx/vercel-ai-sdk'
+import { calculator } from '../ai/tools/calculator'
+// ... other imports ...
+
+interface ExecuteChatProps {
+  session: Session,
+  messages: Array<Message>,
+  saveMessages: ({ messages }: { messages: Array<DBMessage> }) => Promise<any>,
+  id: string, 
+  selectedChatModel: string,
+  dataStream: DataStreamWriter,
+}
+
+const ExecuteChat = Component<ExecuteChatProps, any>(
+  'ExecuteChat', 
+  (props) => {
+    const { session, messages, saveMessages, id, selectedChatModel, dataStream } = props;
+    
+    return <StreamText
+            model={myProvider.languageModel(selectedChatModel)}
+            system={systemPrompt({ selectedChatModel })}
+            messages={messages}
+            maxSteps={5}
+            experimental_activeTools={
+              selectedChatModel === 'chat-model-reasoning'
+                ? []
+                : [
+                    'getWeather',
+                    'createDocument',
+                    'updateDocument',
+                    'requestSuggestions',
+                    'calculator', // Add your new tool here
+                  ]
+            }
+            tools={{
+              getWeather,
+              createDocument: createDocument({ session, dataStream }),
+              updateDocument: updateDocument({ session, dataStream }),
+              requestSuggestions: requestSuggestions({
+                session,
+                dataStream,
+              }),
+              calculator, // Register your tool here
+            }}
+            // ... other props ...
+          />;
+  }
+);
+
+const ExecuteChatWorkflow = Workflow("ExecuteChatWorkflow", ExecuteChat);
+
+export default ExecuteChatWorkflow;
+```
+
+For more advanced usage and configuration options, refer to the (GenSX documentation)[gensx.com/docs].
+
+
 
 ## Deploy Your Own
 
@@ -52,6 +198,7 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
 3. Download your environment variables: `vercel env pull`
+4. Navigate to app.gensx.com to generate an API key and get your org name to put into the env vars
 
 ```bash
 pnpm install
