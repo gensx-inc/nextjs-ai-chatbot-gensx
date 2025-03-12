@@ -77,8 +77,9 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: () => {
-        return 'Oops, an error occured!';
+      onError: (error) => {
+        console.error(error);
+        return `Oops, an error occured! ${error}`;
       },
     });
   } catch (error) {
