@@ -1,6 +1,12 @@
 import {
+  generateUUID,
+} from '@/lib/utils';
+import { getWeather } from '@/lib/ai/tools/get-weather';
+import {
   type Message,
   createDataStreamResponse,
+  smoothStream,
+  StreamTextResult
 } from 'ai';
 import { auth } from '@/app/(auth)/auth';
 import {
@@ -11,11 +17,18 @@ import {
 } from '@/lib/db/queries';
 import {
   getMostRecentUserMessage,
+  sanitizeResponseMessages,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { NextResponse } from 'next/server';
 import ExecuteChatWorkflow from '@/lib/workflows/execute-chat';
-
+import { streamText } from 'ai';
+import { systemPrompt } from '@/lib/ai/prompts';
+import { myProvider } from '@/lib/ai/providers';
+import { createDocument } from '@/lib/ai/tools/create-document';
+import { updateDocument } from '@/lib/ai/tools/update-document';
+import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
+import { isProductionEnvironment } from '@/lib/constants';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -63,14 +76,16 @@ export async function POST(request: Request) {
     return createDataStreamResponse({
       execute: async (dataStream) => {
         const result = await ExecuteChatWorkflow.run({
+          id,
           messages,
           selectedChatModel,
-          id: id,
           dataStream,
+          session,
           saveMessages,
-          session
         });
 
+        console.log('result from route', result);
+        console.log('result type from route', typeof result.consumeStream());
         result.consumeStream();
 
         result.mergeIntoDataStream(dataStream, {
@@ -78,7 +93,6 @@ export async function POST(request: Request) {
         });
       },
       onError: (error) => {
-        console.error(error);
         return `Oops, an error occured! ${error}`;
       },
     });
@@ -111,9 +125,13 @@ export async function DELETE(request: Request) {
     await deleteChatById({ id });
 
     return new Response('Chat deleted', { status: 200 });
-  } catch (error) {
-    return new Response('An error occurred while processing your request', {
-      status: 500,
-    });
+  } catch (error: unknown) {
+    console.error('Error deleting chat:', error);
+    return new Response(
+      error instanceof Error 
+        ? `Error: ${error.message}` 
+        : 'An error occurred while processing your request',
+      { status: 500 }
+    );
   }
 }
