@@ -50,7 +50,7 @@ TLDR; To add a new tool to your chat application:
 2. Create a tool that uses the workflow in `lib/ai/tools/`
 3. Import and add the tool to both the `experimental_activeTools` array and the `tools` object in `execute-chat.tsx`
 
-### 1. Creating Workflows
+### 1. Create a workflow
 
 Create a new workflow file in the `lib/workflows` directory:
 
@@ -90,7 +90,7 @@ const CalculatorWorkflow = Workflow('Calculator Tool', Calculator)
 export default CalculatorWorkflow;
 ```
 
-### 2. Creating Tools from Workflows
+### 2. Create a tool from a workflow
 
 Once you've created a workflow, you can convert it into a tool that can be used in the chat application:
 
@@ -117,7 +117,7 @@ export const calculator =
   }); 
 ```
 
-### 3. Integrating Tools into the Chat Workflow
+### 3. Integrating tool into chat workflow
 
 The main chat execution workflow integrates all your tools. Here's how to add your new tool to the chat system:
 
