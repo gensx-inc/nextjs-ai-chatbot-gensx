@@ -22,7 +22,7 @@ import { type Message as DBMessage } from '@/lib/db/schema';
 import { Session } from 'next-auth';
 import { StreamText } from '@gensx/vercel-ai-sdk';
 import { calculator } from '../ai/tools/calculator';
-
+// import tool from tools/ folder 
 
 interface ExecuteChatProps {
   session: Session,
@@ -52,6 +52,7 @@ const ExecuteChat = gensx.Component<ExecuteChatProps, any>(
                     'updateDocument',
                     'requestSuggestions',
                     'calculator',
+                    // add tool name here
                   ]
             }
             experimental_transform={smoothStream({ chunking: 'word' })}
@@ -65,6 +66,7 @@ const ExecuteChat = gensx.Component<ExecuteChatProps, any>(
                 dataStream,
               }),
               calculator,
+              // add tool from tools/ here
             }}
             onFinish={async ({ response, reasoning }) => {
               if (session.user?.id) {
