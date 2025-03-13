@@ -1,6 +1,5 @@
 
 /** @jsxImportSource @gensx/core */
-import { Component, Workflow } from "@gensx/core"
 import * as gensx from "@gensx/core"
 import { GenerateText } from "@gensx/vercel-ai-sdk"
 import { openai } from "@ai-sdk/openai"
@@ -23,7 +22,7 @@ async function Calculate(props: CalculatorProps) {
         </GenerateText>
     }
 }
-const Calculator = Component<CalculatorProps, CalculatorResult>('calculator', Calculate)
-const CalculatorWorkflow = Workflow('Calculator Tool', Calculator)
+const Calculator = gensx.Component<CalculatorProps, CalculatorResult>('calculator', Calculate)
+const CalculatorWorkflow = gensx.Workflow('Calculator Tool', Calculator)
 
 export default CalculatorWorkflow;
