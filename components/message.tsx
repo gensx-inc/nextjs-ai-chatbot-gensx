@@ -172,7 +172,7 @@ const PurePreviewMessage = ({
                         ) : (
                           <div>
                             <div className="text-sm font-medium mb-1">Tool: {toolName}</div>
-                            <pre className="text-xs">{result.result}</pre>
+                            <pre className="text-xs whitespace-pre-wrap max-w-full overflow-x-auto break-words">{result.result}</pre>
                           </div>
                         )}
                       </div>

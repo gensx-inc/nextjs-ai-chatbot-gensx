@@ -22,6 +22,8 @@ import { type Message as DBMessage } from '@/lib/db/schema';
 import { Session } from 'next-auth';
 import { StreamText } from '@gensx/vercel-ai-sdk';
 import { calculator } from '../ai/tools/calculator';
+import { webSearch } from '../ai/tools/web-search';
+import { getDate } from '../ai/tools/get-date';
 // import tool from tools/ folder 
 
 interface ExecuteChatProps {
@@ -52,6 +54,8 @@ const ExecuteChat = gensx.Component<ExecuteChatProps, any>(
                     'updateDocument',
                     'requestSuggestions',
                     'calculator',
+                    'webSearch',
+                    'getDate',
                     // add tool name here
                   ]
             }
@@ -66,6 +70,8 @@ const ExecuteChat = gensx.Component<ExecuteChatProps, any>(
                 dataStream,
               }),
               calculator,
+              webSearch,
+              getDate,
               // add tool from tools/ here
             }}
             onFinish={async ({ response, reasoning }) => {

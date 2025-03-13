@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@ai-sdk/fireworks": "0.1.12",
-    "@ai-sdk/openai": "1.2.0",
+    "@ai-sdk/openai": "1.2.2",
     "@ai-sdk/react": "^1.1.20",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
