@@ -54,9 +54,10 @@ TLDR; To add a new tool to your chat application:
 
 Create a new workflow file in the `lib/workflows` directory:
 
+> **Note:** When creating a workflow file, make sure to include the JSX pragma at the top of your file: `/** @jsxImportSource @gensx/core */`
+
 ```tsx
 // Example: lib/workflows/calculator.tsx
-/** @jsxImportSource @gensx/core */
 import { Component, Workflow } from "@gensx/core"
 import * as gensx from "@gensx/core"
 import { GenerateText } from "@gensx/vercel-ai-sdk"
