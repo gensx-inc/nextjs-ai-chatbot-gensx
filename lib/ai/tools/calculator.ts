@@ -15,4 +15,4 @@ export const calculator =
         return { result: 'Error performing calculation' };
       }
     },
-  }); 
+  });   

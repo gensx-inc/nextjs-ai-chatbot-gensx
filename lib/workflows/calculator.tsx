@@ -16,15 +16,11 @@ interface CalculatorResult {
 const Calculator = Component<CalculatorProps, CalculatorResult>('calculator', 
     async (props) => {
         const languageModel = openai("gpt-4o-mini");
+        const systemPrompt = `You are a calculator. You will be given an expression and you will need to calculate the result. Return the result as a plain text string. With any steps taken to think through it.`
+        const prompt = `Calculate the result of the following expression: ${props.expression}`
         return {
-            result: <GenerateText
-                system={`You are a calculator. You will be given an expression and you will need to calculate the result. Return the result as a plain text string. With anysteps taken to think through it.`}
-                prompt={`Calculate the result of the following expression: ${props.expression}`}
-                model={languageModel}
-            >
-                {result => {
-                    return result.text
-                }}
+            result: <GenerateText system={systemPrompt} prompt={prompt} model={languageModel}>
+                {result => {return result.text}}
             </GenerateText>
         }
     }
