@@ -170,7 +170,10 @@ const PurePreviewMessage = ({
                             isReadonly={isReadonly}
                           />
                         ) : (
-                          <pre>{JSON.stringify(result, null, 2)}</pre>
+                          <div>
+                            <div className="text-sm font-medium mb-1">Tool: {toolName}</div>
+                            <pre className="text-xs">{result.result}</pre>
+                          </div>
                         )}
                       </div>
                     );

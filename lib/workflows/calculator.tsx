@@ -18,6 +18,7 @@ const Calculator = Component<CalculatorProps, CalculatorResult>('calculator',
         const languageModel = openai("gpt-4o-mini");
         return {
             result: <GenerateText
+                system={`You are a calculator. You will be given an expression and you will need to calculate the result. Return the result as a plain text string. With anysteps taken to think through it.`}
                 prompt={`Calculate the result of the following expression: ${props.expression}`}
                 model={languageModel}
             >
